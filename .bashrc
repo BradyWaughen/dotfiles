@@ -17,7 +17,7 @@ _gold='\[\e[38;5;214m\]'
 _gray='\[\e[38;5;240m\]'
 
 # Prompt:
-# [09:41] >> brady in ~/projects/app
+# [09:41] >> bradywaughen in ~/projects/app
 # on (main) -> _
 PS1="${_gray}[\t]${_reset} ${_pink}>>${_reset} ${_purple}\u${_reset} ${_gray}in${_reset} ${_blue}\w${_reset}\n\$(b=\$(parse_git_branch); [ -n \"\$b\" ] && echo \"${_gray}on${_reset} ${_gold}(\$b)${_reset} \")${_pink}->${_reset} "
 
@@ -36,3 +36,6 @@ shopt -s histappend
 
 # --- Misc ---
 shopt -s checkwinsize
+
+# Update PATH
+export PATH="$HOME/.npm-global/bin:$PATH"
