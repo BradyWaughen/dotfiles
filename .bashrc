@@ -37,5 +37,9 @@ shopt -s histappend
 # --- Misc ---
 shopt -s checkwinsize
 
+# --- Aliases ---
+alias tmc='~/.scripts/tmux-session.sh'
+
 # Update PATH
 export PATH="$HOME/.npm-global/bin:$PATH"
+
