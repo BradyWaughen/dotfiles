@@ -27,6 +27,8 @@ alias la='ls -A'
 alias l='ls -CF'
 alias ..='cd ..'
 alias ...='cd ../..'
+alias tmc='~/.scripts/tmux-session.sh'
+alias ccd='claude --dangerously-skip-permissions'
 
 # --- History ---
 HISTSIZE=1000
@@ -36,9 +38,6 @@ shopt -s histappend
 
 # --- Misc ---
 shopt -s checkwinsize
-
-# --- Aliases ---
-alias tmc='~/.scripts/tmux-session.sh'
 
 # Update PATH
 export PATH="$HOME/.npm-global/bin:$PATH"
