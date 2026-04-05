@@ -1,3 +1,5 @@
+Open
+
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
 # tmux-session.sh — Claude Code workflow layout
@@ -11,37 +13,47 @@
 #  │             │   monitor 1     │   monitor 2    │
 #  └─────────────┴─────────────────┴────────────────┘
 # ─────────────────────────────────────────────────────────────────────────────
-
+ 
 START_DIR="${1:-$(pwd)}"
 SESSION="claude-$(basename "$START_DIR")"
-
+ 
+# If session exists, just attach/switch to it
 if tmux has-session -t "$SESSION" 2>/dev/null; then
-    echo "Session '$SESSION' already running. Attach with: tmux attach -t $SESSION"
+    if [ -n "$TMUX" ]; then
+        tmux switch-client -t "$SESSION"
+    else
+        exec tmux attach-session -t "$SESSION"
+    fi
     exit 0
 fi
-
-cd "$START_DIR"
-
+ 
+cd "$START_DIR" || exit 1
+ 
+# Create the session detached
 tmux new-session -d -s "$SESSION" -x "$(tput cols)" -y "$(tput lines)" -c "$START_DIR"
-tmux rename-window -t "$SESSION:1" "workspace"
-tmux set-window-option -t "$SESSION:1" allow-rename off
-
+ 
+# Figure out what the first window index actually is (respects base-index)
+FIRST_WIN=$(tmux list-windows -t "$SESSION" -F '#{window_index}' | head -1)
+ 
+tmux rename-window -t "$SESSION:$FIRST_WIN" "workspace"
+tmux set-window-option -t "$SESSION:$FIRST_WIN" allow-rename off
+ 
 # Step 1: pane 1 is full screen (will become admin)
 #         split right → pane 1 = admin, pane 2 = worker+monitors
-tmux select-pane -t "$SESSION:1.1"
-tmux split-window -h -l 80%
-
-# Step 2: pane 2 is active (worker+monitors)
-#         split bottom → pane 2 = worker, pane 3 = monitor strip
-tmux select-pane -t "$SESSION:1.2"
-tmux split-window -v -l 25%
-
-# Step 3: pane 3 is active (monitor strip)
-#         split right → pane 3 = monitor 1, pane 4 = monitor 2
-tmux select-pane -t "$SESSION:1.3"
-tmux split-window -h -l 50%
-
+tmux split-window -t "$SESSION:$FIRST_WIN.1" -h -l 80% -c "$START_DIR"
+ 
+# Step 2: pane 2 (worker+monitors) split bottom → pane 2 = worker, pane 3 = monitor strip
+tmux split-window -t "$SESSION:$FIRST_WIN.2" -v -l 25% -c "$START_DIR"
+ 
+# Step 3: pane 3 (monitor strip) split right → pane 3 = monitor 1, pane 4 = monitor 2
+tmux split-window -t "$SESSION:$FIRST_WIN.3" -h -l 50% -c "$START_DIR"
+ 
 # Land on the worker pane
-tmux select-pane -t "$SESSION:1.2"
-
-exec tmux attach-session -t "$SESSION"
+tmux select-pane -t "$SESSION:$FIRST_WIN.2"
+ 
+# Attach or switch depending on whether we're already inside tmux
+if [ -n "$TMUX" ]; then
+    tmux switch-client -t "$SESSION"
+else
+    exec tmux attach-session -t "$SESSION"
+fi
